@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { Container, Input, Text } from "@nextui-org/react";
+import {
+	Container,
+	Input,
+	Text,
+	Button,
+	Grid,
+	Table,
+	Link,
+} from "@nextui-org/react";
 import {
 	Chart as ChartJS,
 	ArcElement,
@@ -9,14 +17,16 @@ import {
 	PointElement,
 	LineElement,
 	Filler,
-	Legend,
 } from "chart.js";
-import { Pie, Doughnut, PolarArea, Radar } from "react-chartjs-2";
+import { PolarArea, Radar } from "react-chartjs-2";
+import { Helmet } from "react-helmet-async";
 
+import { HeartIcon } from "../Components/HeartIcon";
 import {
 	get_questions_user,
 	get_tags_accuracy,
 	get_questions_accuracy,
+	get_rating_tags_accuracy,
 } from "../Api/cf";
 
 ChartJS.register(
@@ -30,85 +40,207 @@ ChartJS.register(
 );
 
 const Home = () => {
+	const columns = [
+		{ name: "Tag and total questions", uid: "tag" },
+		{ name: "Accuracy", uid: "accuracy" },
+	];
 	const [username, setUsername] = useState("");
 	const [show, setShow] = useState(false);
-	const [data, setData] = useState("");
 	const [tagsInfo, setTagsInfo] = useState([]);
 	const [ratingInfo, setRatingInfo] = useState([]);
+	const [ratingTagsInfo, setRatingTagsInfo] = useState([]);
 
 	const _handleSubmit = async (event) => {
 		event.preventDefault();
 
 		get_questions_user(username).then((data) => {
-			console.log(data);
-			setData(data);
-			setShow(true);
 			setTagsInfo(get_tags_accuracy(data.result, 10));
 			setRatingInfo(get_questions_accuracy(data.result, 10));
+			setRatingTagsInfo(get_rating_tags_accuracy(data.result, 5));
+
+			setShow(true);
 		});
 	};
 	return (
-		<Container
-			style={{
-				display: "flex",
-				flexDirection: "column",
-				alignItems: "center",
-			}}
-		>
-			<h1>Wrong Solution %</h1>
-			<br />
-			<form onSubmit={_handleSubmit}>
-				<Input
-					clearable
-					size="xl"
-					color="secondary"
-					width="500px"
-					labelPlaceholder="Username"
-					value={username}
-					onChange={(e) => {
-						setUsername(e.target.value);
+		<>
+			<Helmet>
+				<title>Codeforces Tags Accuracy</title>
+				<link rel="canonical" href="/" />
+			</Helmet>
+			<Container
+				style={{
+					display: "flex",
+					minHeight: "100vh",
+					flexDirection: "column",
+					alignItems: "center",
+					justifyContent: "center",
+				}}
+			>
+				<Text
+					h1
+					size={60}
+					css={{
+						textGradient: "45deg, $cyan600 -20%, $yellow600 100%",
 					}}
-				/>
-			</form>
-			<br />
-			{show === true ? (
-				<Container
-					style={{
-						height: "50vh",
-						display: "flex",
-						justifyContent: "center",
-						flexDirection: "column",
-						alignItems: "center",
-					}}
+					weight="bold"
 				>
-					<PolarArea
-						data={tagsInfo}
-						options={{
-							responsive: true,
-							plugins: {
-								title: {
-									display: true,
-									text: "Codeforces tag accuracy",
-								},
-							},
-						}}
-					></PolarArea>
-					<Radar
-						data={ratingInfo}
-						options={{
-							plugins: {
-								title: {
-									display: true,
-									text: "Codeforces question accuracy",
-								},
-							},
+					Codeforces Tags Accuracy
+				</Text>
+				<br />
+				<form onSubmit={_handleSubmit}>
+					<Input
+						clearable
+						size="xl"
+						color="secondary"
+						width="500px"
+						labelPlaceholder="Username"
+						value={username}
+						onChange={(e) => {
+							setUsername(e.target.value);
 						}}
 					/>
-				</Container>
-			) : (
-				<Text>Enter your username</Text>
-			)}
-		</Container>
+				</form>
+				<br />
+				{show === true ? (
+					<Container
+						style={{
+							height: "50vh",
+							display: "flex",
+							justifyContent: "center",
+							flexDirection: "column",
+							alignItems: "center",
+						}}
+					>
+						<PolarArea
+							data={tagsInfo}
+							options={{
+								responsive: true,
+								plugins: {
+									title: {
+										display: true,
+										text: "Codeforces tag accuracy",
+									},
+								},
+							}}
+						></PolarArea>
+						<Radar
+							data={ratingInfo}
+							options={{
+								plugins: {
+									title: {
+										display: true,
+										text: "Codeforces question accuracy",
+									},
+								},
+							}}
+						/>
+					</Container>
+				) : null}
+				{show === true ? (
+					<Container>
+						<Text
+							h2
+							size={50}
+							css={{
+								textGradient:
+									"45deg, $blue600 -20%, $pink600 50%",
+								textAlign: "center",
+							}}
+							weight="bold"
+						>
+							Tags Accuracy for Respective Questions
+						</Text>
+						{ratingInfo != null &&
+							ratingTagsInfo.map((data) => {
+								return (
+									<Grid
+										css={{
+											display: "flex",
+											height: "50vh",
+											boxShadow:
+												"rgba(149, 157, 165, 0.2) 0px 8px 24px",
+											marginBottom: "2vh",
+											padding: "1vh 1vw",
+											borderRadius: "2vh",
+										}}
+									>
+										<Container>
+											<PolarArea
+												data={data.ratingObj}
+												options={{
+													responsive: true,
+													plugins: {
+														title: {
+															display: true,
+															text: data.rating,
+														},
+													},
+												}}
+											/>
+										</Container>
+										<Container
+											style={{
+												overflowY: "scroll",
+											}}
+										>
+											<Table
+												shadow={false}
+												css={{
+													minWidth: "100%",
+												}}
+												color="secondary"
+											>
+												<Table.Header columns={columns}>
+													{(column) => (
+														<Table.Column
+															key={column.uid}
+														>
+															{column.name}
+														</Table.Column>
+													)}
+												</Table.Header>
+												<Table.Body>
+													{data.ratingObj.labels.map(
+														(label, idx) => {
+															const accuracy =
+																data.ratingObj
+																	.datasets[0]
+																	.data[idx];
+															return (
+																<Table.Row
+																	key={idx}
+																>
+																	<Table.Cell>
+																		{label}
+																	</Table.Cell>
+																	<Table.Cell>
+																		{
+																			accuracy
+																		}
+																	</Table.Cell>
+																</Table.Row>
+															);
+														}
+													)}
+												</Table.Body>
+											</Table>
+										</Container>
+									</Grid>
+								);
+							})}
+					</Container>
+				) : null}
+
+				<Link>
+					<Button
+						auto
+						color="error"
+						icon={<HeartIcon fill="currentColor" filled />}
+					/>
+					<Text h2>Github Repo</Text>
+				</Link>
+			</Container>
+		</>
 	);
 };
 
