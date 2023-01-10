@@ -3,7 +3,7 @@
 #### _Check Tags Accuracy for Codeforces_
 
 <div style="display :flex; flex-direction:row">
-<img src="public/logo.png" width="200"/>
+<img src="./public/logo.png" width="200"/>
 </div>
 
 ## About

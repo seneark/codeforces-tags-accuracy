@@ -7,7 +7,7 @@ import axios from "axios";
 function getRandomColor() {
 	var color = "rgba(";
 	for (var i = 0; i < 3; i++) {
-		color += Math.floor(Math.random() * 255).toString();
+		color += Math.floor(Math.random() * 200 + 50).toString();
 		color += ", ";
 	}
 	color += "0.3 )";
@@ -42,6 +42,7 @@ function get_accuracy_obj_for_CharJS(obj, threshold = 1) {
 	);
 	let accuracy = [];
 	let backgroundColor = [];
+	let total_submission = [];
 	for (let i = 0; i < sorted_tags.length; i++) {
 		let correct_count = sorted_tags[i][1].pass;
 		let wrong_count = sorted_tags[i][1].wrong;
@@ -51,14 +52,24 @@ function get_accuracy_obj_for_CharJS(obj, threshold = 1) {
 					" : " +
 					(correct_count + wrong_count).toString()
 			);
+			total_submission.push(correct_count + wrong_count);
 			accuracy.push(
-				(correct_count / (correct_count + wrong_count)) * 100
+				parseFloat(
+					(correct_count / (correct_count + wrong_count)) * 100
+				).toFixed(2)
 			);
 			backgroundColor.push(getRandomColor());
 		}
 	}
+	total_submission = total_submission.sort(
+		(a, b) => parseFloat(a) - parseFloat(b)
+	);
 	let data_obj = {};
 	data_obj.data = accuracy;
+	data_obj.thresholdSubmission = Math.min(
+		Math.max(total_submission[Math.ceil(total_submission.length / 2)], 10),
+		25
+	);
 	data_obj.backgroundColor = backgroundColor;
 	data_obj.borderWidth = 1;
 	finalObj.datasets.push(data_obj);
@@ -123,7 +134,9 @@ export function get_tags_accuracy(data, threshold = 0) {
 					(correct_count + wrong_count).toString()
 			);
 			accuracy.push(
-				(correct_count / (correct_count + wrong_count)) * 100
+				parseFloat(
+					(correct_count / (correct_count + wrong_count)) * 100
+				).toFixed(2)
 			);
 			backgroundColor.push(getRandomColor());
 		}

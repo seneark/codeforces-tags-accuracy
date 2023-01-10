@@ -41,7 +41,7 @@ ChartJS.register(
 
 const Home = () => {
 	const columns = [
-		{ name: "Tag and total questions", uid: "tag" },
+		{ name: "Tag and total submission", uid: "tag" },
 		{ name: "Accuracy", uid: "accuracy" },
 	];
 	const [username, setUsername] = useState("");
@@ -85,6 +85,14 @@ const Home = () => {
 					weight="bold"
 				>
 					Codeforces Tags Accuracy
+				</Text>
+				<Text
+					size={15}
+					css={{
+						textGradient: "45deg, $error -20%, $red600 100%",
+					}}
+				>
+					Use on Laptop/PC only
 				</Text>
 				<br />
 				<form onSubmit={_handleSubmit}>
@@ -151,9 +159,10 @@ const Home = () => {
 							Tags Accuracy for Respective Questions
 						</Text>
 						{ratingInfo != null &&
-							ratingTagsInfo.map((data) => {
+							ratingTagsInfo.map((data, idx) => {
 								return (
 									<Grid
+										key={idx}
 										css={{
 											display: "flex",
 											height: "50vh",
@@ -184,6 +193,9 @@ const Home = () => {
 											}}
 										>
 											<Table
+												aria-label="Table with Tags Accuracy"
+												compact
+												sticked
 												shadow={false}
 												css={{
 													minWidth: "100%",
@@ -194,6 +206,7 @@ const Home = () => {
 													{(column) => (
 														<Table.Column
 															key={column.uid}
+															allowsSorting
 														>
 															{column.name}
 														</Table.Column>
@@ -206,7 +219,35 @@ const Home = () => {
 																data.ratingObj
 																	.datasets[0]
 																	.data[idx];
-															return (
+															const threshold =
+																data.ratingObj
+																	.datasets[0]
+																	.thresholdSubmission;
+															const totalSubmission =
+																parseInt(
+																	label.split(
+																		" : "
+																	)[1]
+																);
+															return parseInt(
+																accuracy
+															) <=
+																parseInt(
+																	data
+																		.ratingObj
+																		.datasets[0]
+																		.data[
+																		Math.floor(
+																			data
+																				.ratingObj
+																				.labels
+																				.length /
+																				5
+																		)
+																	]
+																) ||
+																totalSubmission <=
+																	threshold ? (
 																<Table.Row
 																	key={idx}
 																>
@@ -214,9 +255,73 @@ const Home = () => {
 																		{label}
 																	</Table.Cell>
 																	<Table.Cell>
-																		{
-																			accuracy
-																		}
+																		<Text
+																			css={{
+																				textGradient:
+																					"45deg, $error -20%, $red600 50%",
+																			}}
+																		>
+																			{
+																				accuracy
+																			}
+																		</Text>
+																	</Table.Cell>
+																</Table.Row>
+															) : null;
+														}
+													)}
+													{data.ratingObj.labels.map(
+														(label, idx) => {
+															const accuracy =
+																data.ratingObj
+																	.datasets[0]
+																	.data[idx];
+															const threshold =
+																data.ratingObj
+																	.datasets[0]
+																	.thresholdSubmission;
+															const totalSubmission =
+																parseInt(
+																	label.split(
+																		" : "
+																	)[1]
+																);
+															return parseInt(
+																accuracy
+															) <=
+																parseInt(
+																	data
+																		.ratingObj
+																		.datasets[0]
+																		.data[
+																		Math.floor(
+																			data
+																				.ratingObj
+																				.labels
+																				.length /
+																				5
+																		)
+																	]
+																) ||
+																totalSubmission <=
+																	threshold ? null : (
+																<Table.Row
+																	key={idx}
+																>
+																	<Table.Cell>
+																		{label}
+																	</Table.Cell>
+																	<Table.Cell>
+																		<Text
+																			css={{
+																				textGradient:
+																					"45deg, $success -20%, $green600 50%",
+																			}}
+																		>
+																			{
+																				accuracy
+																			}
+																		</Text>
 																	</Table.Cell>
 																</Table.Row>
 															);
@@ -231,7 +336,7 @@ const Home = () => {
 					</Container>
 				) : null}
 
-				<Link>
+				<Link href="https://github.com/seneark/codeforces-tags-accuracy">
 					<Button
 						auto
 						color="error"
